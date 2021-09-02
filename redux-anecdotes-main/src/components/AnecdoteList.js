@@ -1,17 +1,22 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { notificationChangeAction } from '../reducers/notificationReducer'
-import { updateAnecdoteAction } from '../reducers/anecdoteReducer'
+import { setNotificationThunk } from '../reducers/notificationReducer'
+import { updateAnecdoteThunk, initializeAnecdotesThunk } from '../reducers/anecdoteReducer'
 
 const AnecdoteList = () => {
   const anecdotesState = useSelector(state => state.anecdotes)
   const filterValueState = useSelector(state => state.filter)
   const dispatch = useDispatch()
-  const updateVote = (id) => {
-    dispatch(updateAnecdoteAction(id))
-    dispatch(notificationChangeAction("SET_NOTIFICATION"))
-    setTimeout(()=> { dispatch(notificationChangeAction("RESET_NOTIFICATION"))}, 5000)
+
+  useEffect(() => {
+    dispatch(initializeAnecdotesThunk())
+  },[dispatch])
+
+  const updateVote = async (anecdote) => {
+    await dispatch(updateAnecdoteThunk(anecdote))
+    dispatch(setNotificationThunk(`you voted '${anecdote.content}'`, 10))
   }
+
   const filterByValue = (anecdotes, filterValue) => {
     const newAnecdotes = anecdotes.filter(anecdote => anecdote.content.includes(filterValue))
     return newAnecdotes
@@ -20,17 +25,17 @@ const AnecdoteList = () => {
 
   return (
     <div>
-      {anecdotes.map(anecdote =>
+      {anecdotes ? anecdotes.map(anecdote =>
         <div key={anecdote.id} style={{"border": "solid 1px black", "padding":"5px", "margin":"5px"}}>
           <div>
             {anecdote.content}
           </div>
           <div>
             <span>has {anecdote.votes} </span>
-            <button onClick={() => updateVote(anecdote.id)}>vote</button>
+            <button onClick={() => updateVote(anecdote)}>vote</button>
           </div>
         </div>
-      )}
+      ): null}
     </div>
   ) 
 }

@@ -3,17 +3,25 @@ const initialState = ''
 const notificationReducer = (state = initialState, action) => {
     switch(action.type) {
         case "SET_NOTIFICATION":
-            return "you voted, If it hurts, do it more often"
-        case "RESET_NOTIFICATION":
+            return action.data
+        case "CLEAR_NOTIFICATION":
             return ""
         default:
             return ""
     }
 }
 
-export const notificationChangeAction = (actionType) => {
-    return {
-        type: actionType,
+export const setNotificationThunk = (message, resetTime) => {
+    return async dispatch => {
+        dispatch({
+            type: "SET_NOTIFICATION",
+            data: message
+        })
+        setTimeout(() => {
+            dispatch({
+                type: "CLEAR_NOTIFICATION",
+            })}, resetTime * 1000
+        )
     }
 }
 
