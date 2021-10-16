@@ -20,7 +20,7 @@ const reducer = (state = initialState, action) => {
     case 'INIT_ANECDOTES': 
       return initAnecdotes(state, action)
     case 'UPDATE_ANECDOTE':
-      return updateAnecdote(state, action.data);
+      return updateNewAnecdote(state, action.data);
     default: return state
   }
 }
@@ -30,7 +30,7 @@ const initAnecdotes = (state, action) => {
   return newState
 }
 
-const updateAnecdote = (state, data) => {
+const updateNewAnecdote = (state, data) => {
   const { id, votes } = data
   const newState = state.map((anecdote) => {
     if (anecdote.id === id)
@@ -47,24 +47,20 @@ const addNewAnecdote = (state, data) => {
   return newState
 }
 
-const generatedId = () => {
-  return String((Math.random()*100000).toFixed(0))
-}
 
-export const addAnecdoteThunk = (content) => {
+export const addAnecdote = (content) => {
   return async dispatch => {
     const newAnecdote = await anecdotesServices.createAnecdote(content)
     dispatch({
       type: 'CREATE_NEW_ANECDOTE',
       data: {
         ...newAnecdote,
-        id: generatedId(),
       }
     })
   }
 }
 
-export const updateAnecdoteThunk = (anecdote) => {
+export const updateAnecdote = (anecdote) => {
   const { id, votes } = anecdote
   const newVotes = votes + 1
   const newAnecdote = {...anecdote, votes: newVotes}
@@ -77,7 +73,7 @@ export const updateAnecdoteThunk = (anecdote) => {
   }
 }
 
-export const initializeAnecdotesThunk = () => {
+export const initializeAnecdotes = () => {
   return async dispatch => {
     const anecdotes = await anecdotesServices.getAll()
     dispatch({

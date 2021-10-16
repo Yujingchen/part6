@@ -1,27 +1,23 @@
 import React, { useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { setNotificationThunk } from '../reducers/notificationReducer'
-import { updateAnecdoteThunk, initializeAnecdotesThunk } from '../reducers/anecdoteReducer'
+import { useDispatch } from 'react-redux'
+import { initializeAnecdotes, updateAnecdote } from '../reducers/anecdoteReducer'
+import { clearNotification, setNotification } from '../reducers/notificationReducer'
+import { connect } from 'react-redux';
 
-const AnecdoteList = () => {
-  const anecdotesState = useSelector(state => state.anecdotes)
-  const filterValueState = useSelector(state => state.filter)
+
+const AnecdoteList = (props) => {
   const dispatch = useDispatch()
+  const anecdotes = props.anecdotes
 
   useEffect(() => {
-    dispatch(initializeAnecdotesThunk())
-  },[dispatch])
+    props.initializeAnecdotes()
+  },[])
 
   const updateVote = async (anecdote) => {
-    await dispatch(updateAnecdoteThunk(anecdote))
-    dispatch(setNotificationThunk(`you voted '${anecdote.content}'`, 10))
+    props.updateAnecdote(anecdote)
+    props.setNotification(`you voted '${anecdote.content}'`)
+    props.clearNotification(5)
   }
-
-  const filterByValue = (anecdotes, filterValue) => {
-    const newAnecdotes = anecdotes.filter(anecdote => anecdote.content.includes(filterValue))
-    return newAnecdotes
-  }
-  const anecdotes = filterByValue(anecdotesState, filterValueState)
 
   return (
     <div>
@@ -40,4 +36,42 @@ const AnecdoteList = () => {
   ) 
 }
 
-export default AnecdoteList;
+const mapStateToProps = (state) => {
+  if (state.filter) {
+    const anecdotes = state.anecdotes.filter(anecdote => anecdote.content.includes(state.filter))
+    return {
+      anecdotes: anecdotes,
+      filter: state.filter
+    }
+  }
+  return {
+    anecdotes: state.anecdotes,
+    filter: state.filter
+  }
+}
+
+const mapDispatchToProps = dispatch => {
+  return {
+    setNotification: (message) => {
+      dispatch(setNotification(message))
+    },
+    clearNotification: (delay) => {
+      dispatch(clearNotification(delay))
+    },
+    initializeAnecdotes: () => {
+      dispatch(initializeAnecdotes())
+    },
+    updateAnecdote: (anecdote) => {
+      dispatch(updateAnecdote(anecdote))
+    }
+  }
+}
+
+
+
+const ConnectedAnecdoteList = connect(
+  mapStateToProps, 
+  mapDispatchToProps
+)(AnecdoteList);
+
+export default ConnectedAnecdoteList;
